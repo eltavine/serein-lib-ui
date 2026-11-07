@@ -401,6 +401,9 @@ public:
 	using MimeDataHook = Fn<bool(
 		not_null<const QMimeData*> data,
 		MimeAction action)>;
+	void addMimeDataHook(MimeDataHook hook) {
+		_mimeDataHooks.push_back(std::move(hook));
+	}
 	void setMimeDataHook(MimeDataHook hook) {
 		_mimeDataHook = std::move(hook);
 	}
@@ -714,6 +717,7 @@ private:
 
 	bool _correcting = false;
 	MimeDataHook _mimeDataHook;
+	std::vector<MimeDataHook> _mimeDataHooks;
 	rpl::event_stream<bool> _menuShownChanges;
 	base::unique_qptr<PopupMenu> _contextMenu;
 	std::vector<ContextMenuHook> _contextMenuHooks;

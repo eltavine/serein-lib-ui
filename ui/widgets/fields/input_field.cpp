@@ -6191,8 +6191,9 @@ void InputField::dropEventInner(QDropEvent *e) {
 
 bool InputField::canInsertFromMimeDataInner(const QMimeData *source) const {
 	if (source
-		&& _mimeDataHook
-		&& _mimeDataHook(source, MimeAction::Check)) {
+		&& (ranges::any_of(_mimeDataHooks, [&](const MimeDataHook &hook) {
+			return hook(source, MimeAction::Check);
+		}) || (_mimeDataHook && _mimeDataHook(source, MimeAction::Check)))) {
 		return true;
 	}
 	return _inner->QTextEdit::canInsertFromMimeData(source);
@@ -6203,8 +6204,9 @@ void InputField::insertFromMimeDataInner(const QMimeData *source) {
 		return;
 	}
 	if (source
-		&& _mimeDataHook
-		&& _mimeDataHook(source, MimeAction::Insert)) {
+		&& (ranges::any_of(_mimeDataHooks, [&](const MimeDataHook &hook) {
+			return hook(source, MimeAction::Insert);
+		}) || (_mimeDataHook && _mimeDataHook(source, MimeAction::Insert)))) {
 		return;
 	}
 	const auto text = [&] {
