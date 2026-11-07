@@ -46,6 +46,8 @@ namespace {
 constexpr auto kSubSuperMultiplier = 0.75;
 
 QString Custom;
+QString CustomMonospace;
+bool MonospaceLigatures = false;
 
 } // namespace
 
@@ -56,6 +58,11 @@ const QString &SystemFontTag() {
 
 void SetCustomFont(const QString &font) {
 	Custom = font;
+}
+
+void SetCustomMonospaceFont(const QString &font, bool ligatures) {
+	CustomMonospace = font;
+	MonospaceLigatures = ligatures;
 }
 
 namespace internal {
@@ -313,7 +320,13 @@ struct Metrics {
 	const auto system = !monospace && (family == SystemFontTag());
 	const auto overriden = !monospace && !system && !family.isEmpty();
 	if (monospace) {
-		font.setFamily(MonospaceFont());
+		font.setFamily(CustomMonospace.isEmpty()
+			? MonospaceFont() : CustomMonospace);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+		font.setFeature("liga", MonospaceLigatures ? 1 : 0);
+		font.setFeature("clig", MonospaceLigatures ? 1 : 0);
+		font.setFeature("calt", MonospaceLigatures ? 1 : 0);
+#endif // Qt >= 6.7
 	} else if (system) {
 	} else if (overriden) {
 		font.setFamily(family);
